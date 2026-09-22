@@ -48,3 +48,6 @@ charts:
     targetRevision: 0.25.1
     valueFile: "value-files/akhq/values.yaml"
   # Override values with local values file
+  gpu-llm:
+    namespace: ai
+    path: "local-charts/gpu-llm"
