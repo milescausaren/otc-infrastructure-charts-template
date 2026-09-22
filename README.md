@@ -11,7 +11,7 @@ This is the charts side of the workshop. The cluster already exists, ArgoCD is a
 running, and from here on every service is deployed by committing YAML into this
 repository.
 
-The _infrastructure-charts_ helm chart is installed by OpenTofu and follows the
+The _app-charts_ helm chart is installed by OpenTofu and follows the
 [app-of-apps pattern](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern):
 every entry you add turns into an ArgoCD Application.
 
@@ -59,7 +59,7 @@ first.
 
 ## The loop: how a service gets deployed
 
-OpenTofu installs exactly one helm chart, _infrastructure-charts_. That chart does not
+OpenTofu installs exactly one helm chart, _app-charts_. That chart does not
 deploy any workload itself, it only creates ArgoCD Applications out of the entries below
 the `charts:` key in its `values.yaml`. ArgoCD then pulls each chart from wherever the
 entry points to and keeps it in sync with this repository.
@@ -70,10 +70,10 @@ So the loop is always the same: edit `values.yaml`, commit, push, wait 2 to 3 mi
 
 | Path | What it holds |
 | --- | --- |
-| `infrastructure-charts/values.yaml` | The list of services under `charts:`, plus the global helm registry and the parameters injected into every chart |
-| `infrastructure-charts/values-dev.yaml` | Stage specific overrides, picked up through the `stage` value handed over by OpenTofu |
-| `infrastructure-charts/value-files/` | A complete `values.yaml` per chart, referenced by `valueFile:` |
-| `infrastructure-charts/templates/applications.yaml` | Turns every entry under `charts:` into an ArgoCD Application |
+| `app-charts/values.yaml` | The list of services under `charts:`, plus the global helm registry and the parameters injected into every chart |
+| `app-charts/values-dev.yaml` | Stage specific overrides, picked up through the `stage` value handed over by OpenTofu |
+| `app-charts/value-files/` | A complete `values.yaml` per chart, referenced by `valueFile:` |
+| `app-charts/templates/applications.yaml` | Turns every entry under `charts:` into an ArgoCD Application |
 | `local-charts/` | Charts that live in this repository, for example _basic-auth_ |
 
 > [!TIP]
@@ -96,7 +96,7 @@ There are three ways to point an entry at a chart:
 | Way | When to use it |
 | --- | --- |
 | Change the values inside the remote or local helm chart itself | The chart is yours |
-| Set `parameters:` in `infrastructure-charts/values.yaml` | You need to template values, or you only have a few of them |
+| Set `parameters:` in `app-charts/values.yaml` | You need to template values, or you only have a few of them |
 | Point `valueFile:` at a file under `value-files/` | You have a lot of static values which are not stage dependent |
 
 Parameters look like this:
@@ -132,7 +132,7 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       projects = {
-        infrastructure-charts = {
+        app-charts = {
           projectValues = {
             # Set this to enable the stage file values-$STAGE.yaml
             stage       = var.stage
@@ -155,9 +155,9 @@ We do not split off an app repository in this workshop. This is the recipe for l
 your business apps get their own repository and their own team:
 
 1. Copy the whole content of this project into another git repository
-2. Rename the folder _infrastructure-charts_ to something you like, for example
+2. Rename the folder _app-charts_ to something you like, for example
    _app-charts_
-3. Change all the other occurrences of _infrastructure-charts_ to _app-charts_
+3. Change all the other occurrences of _app-charts_ to _app-charts_
 4. Register _app-charts_ as an app-of-apps project inside OpenTofu:
 
    ```terraform
@@ -166,7 +166,7 @@ your business apps get their own repository and their own team:
      values = [
        yamlencode({
          projects = {
-           infrastructure-charts = {
+           app-charts = {
              ...
            }
            app-charts = {
@@ -187,7 +187,7 @@ your business apps get their own repository and their own team:
    }
    ```
 
-5. ArgoCD now does the same with the _app-charts_ as with the _infrastructure-charts_
+5. ArgoCD now does the same with the _app-charts_ as with the _app-charts_
 
 > [!NOTE]
 > For each team we recommend an own git repository and AppProject. Only then you can fully
@@ -240,7 +240,7 @@ served under your admin domain. The chart is called `elastic-operator`, version
 <details>
 <summary>Solution</summary>
 
-1. Open `infrastructure-charts/values.yaml`
+1. Open `app-charts/values.yaml`
 2. Add a new service under the existing `charts:` key. No `repoURL` and no `path`, it comes
    from the global registry:
 
@@ -267,7 +267,7 @@ The dashboard should link to your new service like it does for every other one.
 <details>
 <summary>Solution</summary>
 
-Edit `infrastructure-charts/value-files/admin-dashboard/values.yaml`. The chart ships one
+Edit `app-charts/value-files/admin-dashboard/values.yaml`. The chart ships one
 tile per service and this repository switches off everything it does not deploy, so remove
 the `kibana` entry from the disabled block, or set it to `true`:
 
@@ -301,7 +301,7 @@ Run two kafka replicas instead of one. No `kubectl scale`, no click in the UI.
 <summary>Solution</summary>
 
 1. Change the `"kafka.replicaCount"` parameter of the _kafka_ chart in
-   `infrastructure-charts/values.yaml` from 1 to 2
+   `app-charts/values.yaml` from 1 to 2
 2. Commit and push your changes
 3. Check the _kafka_ service in the ArgoCD UI and verify that it scaled up
 

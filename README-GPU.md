@@ -19,7 +19,7 @@ on the GPU node plus Open WebUI in front of it. Make ArgoCD deploy it.
 <details>
 <summary>Solution</summary>
 
-Add an entry under `charts:` in `infrastructure-charts/values.yaml`. It is a local chart,
+Add an entry under `charts:` in `app-charts/values.yaml`. It is a local chart,
 so it only needs a `path`, like _basic-auth_. Repo and branch come from `global.git`:
 
 ```yaml
@@ -93,7 +93,7 @@ The dashboard should link to it like every other service.
 <details>
 <summary>Solution</summary>
 
-Add a tile in `infrastructure-charts/value-files/admin-dashboard/values.yaml`. The full
+Add a tile in `app-charts/value-files/admin-dashboard/values.yaml`. The full
 tile list is in the chart itself, `local-charts/kumoops-admin-dashboard/values.yaml`.
 There is no tile for a self hosted LLM, so add your own under `defaultDashboard.tiles`
 with `enabled: true` plus `href`, `imgSrc`, `imgAlt` and `category`, the chart's

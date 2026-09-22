@@ -20,7 +20,7 @@ tolerations:
     effect: NoSchedule
 
 ingress:
-  # -- Injected by infrastructure-charts via global.helm.parameters.
+  # -- Injected by app-charts via global.helm.parameters.
   stageDomain: ""
   # -- Subdomain Open WebUI is published under.
   subdomain: ai
